@@ -33,10 +33,10 @@ public class Player extends Entity{
     public void getPlayerImage(){
 
         try{
-            right = ImageIO.read(getClass().getResourceAsStream("/images/tractor.png"));
-            left = ImageIO.read(getClass().getResourceAsStream("/images/tractor.png"));
-            down = ImageIO.read(getClass().getResourceAsStream("/images/tractor.png"));
-            up = ImageIO.read(getClass().getResourceAsStream("/images/tractor.png"));
+            right = ImageIO.read(getClass().getResourceAsStream("/tractor.png"));
+            left = ImageIO.read(getClass().getResourceAsStream("/tractor.png"));
+            down = ImageIO.read(getClass().getResourceAsStream("/tractor.png"));
+            up = ImageIO.read(getClass().getResourceAsStream("/tractor.png"));
 
         }catch(IOException e){
             e.printStackTrace();
@@ -67,9 +67,6 @@ public class Player extends Entity{
     }
 
     public void draw(Graphics2D g2){
-        
-        //g2.setColor(Color.black);
-        //g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 
         BufferedImage image = right;
 
