@@ -2,7 +2,7 @@
 OUT = out
 
 # Find all java files
-SOURCES = $(shell find . -name "*.java")
+SOURCES = $(shell find src -name "*.java")
 
 # Default target - compile and run
 all: compile run
