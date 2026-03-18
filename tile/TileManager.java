@@ -29,25 +29,25 @@ public class TileManager {
         try {
 
             tile[0] = new Tile();
-            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(5, 5, 16, 16); // Base grass
+            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(5, 5, 16, 16); // Base grass
 
             tile[1] = new Tile();
-            tile[1].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(95, 274, 16, 16); // Stone Path Tile
+            tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(95, 274, 16, 16); // Stone Path Tile
 
             tile[2] = new Tile();
-            tile[2].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(255, 275, 16, 16); // Dirt/Mud Path Tile
+            tile[2].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(255, 275, 16, 16); // Dirt/Mud Path Tile
 
             tile[3] = new Tile();
-            tile[3].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(145, 395, 16, 16); // Wooden Platform/Deck
+            tile[3].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(145, 395, 16, 16); // Wooden Platform/Deck
 
             tile[4] = new Tile();
-            tile[4].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(175, 344, 16, 16); // Log Piles
+            tile[4].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(175, 344, 16, 16); // Log Piles
 
             tile[5] = new Tile();
-            tile[5].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(463, 385, 16, 16); // Market Stalls/Houses
+            tile[5].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(463, 385, 16, 16); // Market Stalls/Houses
 
             tile[6] = new Tile();
-            tile[6].image = ImageIO.read(getClass().getResourceAsStream("/PathAndObjects.png")).getSubimage(105, 335, 16, 16); // Water
+            tile[6].image = ImageIO.read(getClass().getResourceAsStream("/tiles/PathAndObjects.png")).getSubimage(105, 335, 16, 16); // Water
 
 
         } catch(IOException e) {
