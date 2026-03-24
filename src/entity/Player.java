@@ -31,7 +31,7 @@ public class Player extends Entity{
         
         worldX = gp.tileSize * 23; // starting position of player
         worldY = gp.tileSize * 21;
-        speed = 4;
+        speed = 10;
         direction = "right";
         angle = 0;
     }
@@ -71,10 +71,10 @@ public class Player extends Entity{
             worldX += speed;
         }
 
-        // Clamp to world boundaries
+        // World boundaries
         int maxX = gp.tileSize * gp.maxWorldCol - gp.tileSize;
         int maxY = gp.tileSize * gp.maxWorldRow - gp.tileSize;
-        
+
         if(worldX < 0) worldX = 0;
         if(worldY < 0) worldY = 0;
         if(worldX > maxX) worldX = maxX;

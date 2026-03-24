@@ -13,27 +13,33 @@ import main.GamePanel;
 
 public class TileManager {
     GamePanel gp;
-    Tile[] tile;
-    int mapTileNum[][];
+    public Tile[] tile;
     int tileSize = 16;
 
+    int[][] layer1;
+    int[][] layer2;
+    int[][] layer3;
+    int[][] layer4;
 
     private BufferedImage forestSheet;
 
-    public TileManager(GamePanel gp){
+    public TileManager(GamePanel gp) {
         this.gp = gp;
 
-        tile = new Tile[10];
-        mapTileNum = new int[gp.maxWorldRow][gp.maxWorldCol];
+        layer1 = new int[gp.maxWorldRow][gp.maxWorldCol];
+        layer2 = new int[gp.maxWorldRow][gp.maxWorldCol];
+        layer3 = new int[gp.maxWorldRow][gp.maxWorldCol];
+        layer4 = new int[gp.maxWorldRow][gp.maxWorldCol];
 
         loadSpritesheets();
-        loadGrassTiles();
+        loadTiles();
 
-
-        loadMap("/maps/map01");
+        loadMap("/maps/map_Tile_Layer_1.csv", layer1);
+        loadMap("/maps/map_Tile_Layer_2.csv", layer2);
+        loadMap("/maps/map_Tile_Layer_3.csv", layer3);
+        loadMap("/maps/map_Tile_Layer_4.csv", layer4);
     }
 
-    
     private void loadSpritesheets() {
         try {
             forestSheet = ImageIO.read(getClass().getResourceAsStream("/tiles/forest_tiles.png"));
@@ -42,71 +48,91 @@ public class TileManager {
         }
     }
 
-    private void loadGrassTiles() {
-        tile[0] = new Tile();
-        tile[0].image = forestSheet.getSubimage(0, 0, tileSize, tileSize);
+    private void loadTiles() {
+        
+        int sheetCols = forestSheet.getWidth() / tileSize; // spritesheet is 32 tiles wide (512px / 16px)
+    
+        // Max ID in CSV is 755, size 800 to be safe
+        tile = new Tile[800]; 
+    
+        for (int i = 0; i < tile.length; ++i) {
+            int col = i % sheetCols;
+            int row = i / sheetCols;
+        
+            int px = col * tileSize;
+            int py = row * tileSize;
+        
+            if (px + tileSize <= forestSheet.getWidth() && 
+                py + tileSize <= forestSheet.getHeight()) {
+                tile[i] = new Tile();
+                tile[i].image = forestSheet.getSubimage(px, py, tileSize, tileSize);
+            }
+        }
     }
 
-    public void loadMap(String filePath){
-        
+    public void loadMap(String filePath, int[][] layer) {
         try {
-        InputStream is = getClass().getResourceAsStream(filePath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            InputStream is = getClass().getResourceAsStream(filePath);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-        int col = 0;
-        int row = 0;
+            // CSV from Tiled sometimes has a header line, skip it if needed
+            // br.readLine(); // uncomment if first line is not numbers
 
-            while(col < gp.maxWorldCol && row < gp.maxWorldRow) {
+            for (int row = 0; row < gp.maxWorldRow; ++row) {
                 String line = br.readLine();
+                if (line == null) break;
 
-                while(col < gp.maxWorldCol) {
-                    String numbers[] = line.split(" ");
+                String[] numbers = line.split(",");
 
-                    int num = Integer.parseInt(numbers[col]);
-
-                    mapTileNum[row][col] = num;
-                    col++;
-                }
-                if(col == gp.maxWorldCol) {
-                    col = 0;
-                    row++;
+                for (int col = 0; col < gp.maxWorldCol; ++col) {
+                    // Tiled uses -1 for empty tiles, we keep that
+                    layer[row][col] = Integer.parseInt(numbers[col].trim());
                 }
             }
             br.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void draw(Graphics2D g2) {
+        drawLayer(g2, layer1);
+        drawLayer(g2, layer2);
+        drawLayer(g2, layer3);
+        drawLayer(g2, layer4);
+    }
+
+    private void drawLayer(Graphics2D g2, int[][] layer) {
         
-        int worldCol = 0;
-        int worldRow = 0;
+        for (int worldRow = 0; worldRow < gp.maxWorldRow; ++worldRow) {
+            for (int worldCol = 0; worldCol < gp.maxWorldCol; ++worldCol) {
 
-        while(worldCol < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
+                int tileNum = layer[worldRow][worldCol];
 
-            int tileNum = mapTileNum[worldRow][worldCol];
+                // -1 means empty in Tiled CSV, skip it
+                if (tileNum < 0) continue;
 
-            int worldX = worldCol * gp.tileSize;
-            int worldY = worldRow * gp.tileSize;
+                int worldX = worldCol * gp.tileSize;
+                int worldY = worldRow * gp.tileSize;
 
-            int screenX = worldX - gp.player.worldX + gp.player.screenX;
-            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+                int camX = gp.player.worldX - gp.player.screenX;
+                int camY = gp.player.worldY - gp.player.screenY;
 
-            if (worldX + gp.tileSize > gp.player.worldX - gp.player.screenX &&
-                worldX - gp.tileSize < gp.player.worldX + gp.player.screenX &&
-                worldY + gp.tileSize > gp.player.worldY - gp.player.screenY &&
-                worldY - gp.tileSize < gp.player.worldY + gp.player.screenY){
+                int screenX = worldX - camX;
+                int screenY = worldY - camY;
 
-                g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
-            }
-            
-            worldCol++;
-            if(worldCol == gp.maxWorldCol) {
-                worldCol = 0;
-                worldRow++;
+                // Frustum culling
+                if (worldX + gp.tileSize > camX &&
+                    worldX < camX + gp.screenWidth &&
+                    worldY + gp.tileSize > camY &&
+                    worldY < camY + gp.screenHeight) {
+
+                    // Safety check — don't crash if tile index not loaded
+                    if (tileNum < tile.length && tile[tileNum] != null) {
+                        g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+                    }
+                }
             }
         }
     }
-
 }
