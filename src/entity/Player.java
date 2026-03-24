@@ -13,9 +13,15 @@ public class Player extends Entity{
     GamePanel gp;
     KeyHandler keyH;
 
+    public final int screenX;
+    public final int screenY;
+
     public Player(GamePanel gp, KeyHandler keyH){
         this.gp = gp;
         this.keyH = keyH;
+
+        screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
+        screenY = gp.screenHeight/2 - (gp.tileSize / 2);
 
         setDefaultValues();
         getPlayerImage();
@@ -23,8 +29,8 @@ public class Player extends Entity{
 
     public void setDefaultValues(){
         
-        x = 100;
-        y = 100;
+        worldX = gp.tileSize * 23; // starting position of player
+        worldY = gp.tileSize * 21;
         speed = 4;
         direction = "right";
         angle = 0;
@@ -47,23 +53,33 @@ public class Player extends Entity{
         if(keyH.upPressed == true){
             direction = "up";
             angle = Math.toRadians(-90);
-            y -= speed;
+            worldY -= speed;
         }
         else if(keyH.downPressed == true){
             direction = "down";
             angle = Math.toRadians(90);
-            y += speed;
+            worldY += speed;
         }
         else if(keyH.leftPressed == true){
             direction = "left";
             angle = 0;
-            x -= speed;
+            worldX -= speed;
         }
         else if(keyH.rightPressed == true){
             direction = "right";
             angle = 0;
-            x += speed;
+            worldX += speed;
         }
+
+        // Clamp to world boundaries
+        int maxX = gp.tileSize * gp.maxWorldCol - gp.tileSize;
+        int maxY = gp.tileSize * gp.maxWorldRow - gp.tileSize;
+        
+        if(worldX < 0) worldX = 0;
+        if(worldY < 0) worldY = 0;
+        if(worldX > maxX) worldX = maxX;
+        if(worldY > maxY) worldY = maxY;
+
     }
 
     public void draw(Graphics2D g2){
@@ -74,13 +90,13 @@ public class Player extends Entity{
         if(direction.equals("up")) image = up;
         if(direction.equals("down")) image = down;
 
-        g2.rotate(angle, x + gp.tileSize/2, y + gp.tileSize/2);
+        g2.rotate(angle, screenX + gp.tileSize/2, screenY + gp.tileSize/2);
 
         if(direction.equals("left")){
-            g2.drawImage(image, x, y, -gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, screenX, screenY, -gp.tileSize, gp.tileSize, null);
         }
         else{
-            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
         }
 
 
