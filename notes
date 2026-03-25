@@ -1,3 +1,0 @@
-Notes
-javac $(find . -name "*.java")
-java main.Main

@@ -16,10 +16,10 @@ public class TileManager {
     public Tile[] tile;
     int tileSize = 16;
 
-    int[][] layer1;
-    int[][] layer2;
-    int[][] layer3;
-    int[][] layer4;
+    public int[][] layer1;
+    public int[][] layer2;
+    public int[][] layer3;
+    public int[][] layer4;
 
     private BufferedImage forestSheet;
 
@@ -48,6 +48,38 @@ public class TileManager {
         }
     }
 
+    private boolean isSolidTile(int id) {
+
+    // All base ranges you gave
+    int[][] baseRanges = {
+        {512, 515}, {544, 547}, {576, 579}, {608, 611},
+        {640, 643}, {672, 675}, {704, 707}, {736, 739},
+
+        {384, 391}, {416, 423}, {448, 455}, {480, 487},
+
+        {456, 467}, {488, 499}, {520, 537}
+    };
+
+    // Extend pattern every +32 until reaching ~744–761
+    for (int offset = 0; offset <= (744 - 384); offset += 32) {
+
+        for (int[] range : baseRanges) {
+
+            int start = range[0] + offset;
+            int end   = range[1] + offset;
+
+            // stop if we go beyond your final limit
+            if (start > 761) continue;
+
+            if (id >= start && id <= end) {
+                return true;
+            }
+        }
+    }
+
+        return false;
+    }
+
     private void loadTiles() {
         
         int sheetCols = forestSheet.getWidth() / tileSize; // spritesheet is 32 tiles wide (512px / 16px)
@@ -66,6 +98,10 @@ public class TileManager {
                 py + tileSize <= forestSheet.getHeight()) {
                 tile[i] = new Tile();
                 tile[i].image = forestSheet.getSubimage(px, py, tileSize, tileSize);
+
+                if (isSolidTile(i)) {
+                    tile[i].collision = true;
+                }
             }
         }
     }
@@ -104,30 +140,36 @@ public class TileManager {
 
     private void drawLayer(Graphics2D g2, int[][] layer) {
         
+        // Clamp camera
+        int camX = gp.player.worldX - gp.player.screenX;
+        int camY = gp.player.worldY - gp.player.screenY;
+
+        int maxCamX = gp.maxWorldCol * gp.tileSize - gp.screenWidth;
+        int maxCamY = gp.maxWorldRow * gp.tileSize - gp.screenHeight;
+
+        if (camX < 0) camX = 0;
+        if (camY < 0) camY = 0;
+        if (camX > maxCamX) camX = maxCamX;
+        if (camY > maxCamY) camY = maxCamY;
+
         for (int worldRow = 0; worldRow < gp.maxWorldRow; ++worldRow) {
             for (int worldCol = 0; worldCol < gp.maxWorldCol; ++worldCol) {
 
                 int tileNum = layer[worldRow][worldCol];
-
-                // -1 means empty in Tiled CSV, skip it
                 if (tileNum < 0) continue;
 
                 int worldX = worldCol * gp.tileSize;
                 int worldY = worldRow * gp.tileSize;
 
-                int camX = gp.player.worldX - gp.player.screenX;
-                int camY = gp.player.worldY - gp.player.screenY;
-
+                // Use clamped camera
                 int screenX = worldX - camX;
                 int screenY = worldY - camY;
 
-                // Frustum culling
                 if (worldX + gp.tileSize > camX &&
                     worldX < camX + gp.screenWidth &&
                     worldY + gp.tileSize > camY &&
                     worldY < camY + gp.screenHeight) {
 
-                    // Safety check — don't crash if tile index not loaded
                     if (tileNum < tile.length && tile[tileNum] != null) {
                         g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
                     }
