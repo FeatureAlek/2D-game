@@ -17,8 +17,12 @@ public class Player extends Entity{
     public final int screenX;
     public final int screenY;
     
-    boolean moving = false;
-    int pixelCounter = 0;
+    boolean isMoving = false;
+    private int targetWorldX, targetWorldY;
+    private int moveSpeed = 4; // pixels per frame during animation
+
+    private int speedBoostTimer = 0;
+    private int boostedMoveSpeed = 8;
 
 
     public Player(GamePanel gp, KeyHandler keyH){
@@ -38,9 +42,13 @@ public class Player extends Entity{
         
         worldX = gp.tileSize * 23; // starting position of player
         worldY = gp.tileSize * 21;
-        speed = 10;
+        speed = 4;
         direction = "right";
         angle = 0;
+
+        // Snap to tile grid on start
+        targetWorldX = worldX;
+        targetWorldY = worldY;
     }
 
     public void getPlayerImage(){
@@ -56,44 +64,77 @@ public class Player extends Entity{
         }
     }
 
-    public void update(){
+    public void activateSpeedBoost(int duration) {
+        speedBoostTimer = duration;
+        moveSpeed = boostedMoveSpeed;
+    }
 
-        collisionOn = false;
-        gp.cChecker.checkTile(this);
+    public void update() {
 
-        // TODO implement tile based walking
-            if(keyH.upPressed == true){
+        if (speedBoostTimer > 0) {
+                speedBoostTimer--;
+            if (speedBoostTimer == 0) {
+                moveSpeed = speed; // reset speed
+            }
+        }
+
+        if (isMoving) {
+            // Slide toward target
+            int dx = targetWorldX - worldX;
+            int dy = targetWorldY - worldY;
+
+            if (Math.abs(dx) <= moveSpeed && Math.abs(dy) <= moveSpeed) {
+                // Snap exactly to target when close enough
+                worldX = targetWorldX;
+                worldY = targetWorldY;
+                isMoving = false;
+                gp.cChecker.checkObject(this);
+            } else {
+                // Move toward target
+                if (dx != 0) worldX += (dx > 0) ? moveSpeed : -moveSpeed;
+                if (dy != 0) worldY += (dy > 0) ? moveSpeed : -moveSpeed;
+            }
+
+        } else {
+            int nextX = targetWorldX;
+            int nextY = targetWorldY;
+
+            if (keyH.upPressed) {
                 direction = "up";
                 angle = Math.toRadians(-90);
-                if (!collisionOn) worldY -= speed;
-            }
-            else if(keyH.downPressed == true){
+                nextY -= gp.tileSize;
+            } else if (keyH.downPressed) {
                 direction = "down";
                 angle = Math.toRadians(90);
-                if (!collisionOn) worldY += speed;
-            }
-            else if(keyH.leftPressed == true){
+                nextY += gp.tileSize;
+            } else if (keyH.leftPressed) {
                 direction = "left";
                 angle = 0;
-                if (!collisionOn) worldX -= speed;
-            }
-            else if(keyH.rightPressed == true){
+                nextX -= gp.tileSize;
+            } else if (keyH.rightPressed) {
                 direction = "right";
                 angle = 0;
-                if (!collisionOn) worldX += speed;
+                nextX += gp.tileSize;
+            } else {
+                return;
             }
 
+            // World boundary check
+            int maxX = gp.tileSize * (gp.maxWorldCol - 1);
+            int maxY = gp.tileSize * (gp.maxWorldRow - 1);
+            nextX = Math.max(0, Math.min(nextX, maxX));
+            nextY = Math.max(0, Math.min(nextY, maxY));
 
-        // World boundaries
-        int maxX = gp.tileSize * gp.maxWorldCol - gp.tileSize;
-        int maxY = gp.tileSize * gp.maxWorldRow - gp.tileSize;
+            // Collision check against the target tile
+            collisionOn = false;
+            gp.cChecker.checkTileAt(this, nextX, nextY);
 
-        if(worldX < 0) worldX = 0;
-        if(worldY < 0) worldY = 0;
-        if(worldX > maxX) worldX = maxX;
-        if(worldY > maxY) worldY = maxY;
-
-
+            if (!collisionOn) {
+                targetWorldX = nextX;
+                targetWorldY = nextY;
+                isMoving = true;
+            }
+        }
     }
 
     public void draw(Graphics2D g2) {

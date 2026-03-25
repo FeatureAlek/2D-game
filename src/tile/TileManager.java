@@ -20,6 +20,7 @@ public class TileManager {
     public int[][] layer2;
     public int[][] layer3;
     public int[][] layer4;
+    public int[][] layer5;
 
     private BufferedImage forestSheet;
 
@@ -30,14 +31,17 @@ public class TileManager {
         layer2 = new int[gp.maxWorldRow][gp.maxWorldCol];
         layer3 = new int[gp.maxWorldRow][gp.maxWorldCol];
         layer4 = new int[gp.maxWorldRow][gp.maxWorldCol];
+        layer5 = new int[gp.maxWorldRow][gp.maxWorldCol];
 
         loadSpritesheets();
         loadTiles();
 
-        loadMap("/maps/map_Tile_Layer_1.csv", layer1);
-        loadMap("/maps/map_Tile_Layer_2.csv", layer2);
-        loadMap("/maps/map_Tile_Layer_3.csv", layer3);
-        loadMap("/maps/map_Tile_Layer_4.csv", layer4);
+        loadMap("/maps/map_Base.csv", layer1);
+        loadMap("/maps/map_Layer2.csv", layer2);
+        loadMap("/maps/map_Layer3.csv", layer3);
+        loadMap("/maps/map_Layer4.csv", layer4);
+        loadMap("/maps/map_Object_layer.csv", layer5);
+
     }
 
     private void loadSpritesheets() {
@@ -136,6 +140,8 @@ public class TileManager {
         drawLayer(g2, layer2);
         drawLayer(g2, layer3);
         drawLayer(g2, layer4);
+        drawLayer(g2, layer5);
+
     }
 
     private void drawLayer(Graphics2D g2, int[][] layer) {
@@ -177,4 +183,24 @@ public class TileManager {
             }
         }
     }
+
+    public void loadObjects(object.SuperObject[] objects) {
+        int index = 0;
+        for (int row = 0; row < gp.maxWorldRow; row++) {
+            for (int col = 0; col < gp.maxWorldCol; col++) {
+                int id = layer5[row][col];
+                if (id < 0) continue; // skip empty tiles
+
+                // Everything in this layer is special grass
+                objects[index] = new object.ObjectGrass();
+                objects[index].worldX = col * gp.tileSize;
+                objects[index].worldY = row * gp.tileSize;
+                index++;
+
+                if (index >= objects.length) return; // safety, don't overflow array
+            }
+        }
+    }
+
+
 }

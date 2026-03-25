@@ -67,8 +67,57 @@ public class CollisionChecker {
         return -1;
     }
 
+    public void checkTileAt(Entity entity, int nextX, int nextY) {
+
+        int left   = (nextX + entity.solidArea.x) / gp.tileSize;
+        int right  = (nextX + entity.solidArea.x + entity.solidArea.width) / gp.tileSize;
+        int top    = (nextY + entity.solidArea.y) / gp.tileSize;
+        int bottom = (nextY + entity.solidArea.y + entity.solidArea.height) / gp.tileSize;
+
+        int[][] layersArr[] = {gp.tileM.layer1, gp.tileM.layer2, gp.tileM.layer3, gp.tileM.layer4};
+
+        int[] cols = {left, right};
+        int[] rows = {top, bottom};
+
+        for (int[][] layer : layersArr) {
+            for (int r : rows) {
+                for (int c : cols) {
+                    if (r < 0 || c < 0 || r >= gp.maxWorldRow || c >= gp.maxWorldCol) {
+                        entity.collisionOn = true;
+                        return;
+                    }
+                    int id = layer[r][c];
+                    if (id >= 0 && id < gp.tileM.tile.length
+                            && gp.tileM.tile[id] != null
+                            && gp.tileM.tile[id].collision) {
+                        entity.collisionOn = true;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     private boolean isSolid(int tileNum) {
         if (tileNum < 0) return false;
         return gp.tileM.tile[tileNum] != null && gp.tileM.tile[tileNum].collision;
     }
+
+    public void checkObject(entity.Entity entity) {
+
+    for (object.SuperObject obj : gp.objects) {
+        if (obj == null) continue;
+
+        // Check if entity is on the same tile as the object
+        int entityCol = entity.worldX / gp.tileSize;
+        int entityRow = entity.worldY / gp.tileSize;
+        int objCol    = obj.worldX    / gp.tileSize;
+        int objRow    = obj.worldY    / gp.tileSize;
+
+        if (entityCol == objCol && entityRow == objRow) {
+            obj.onPlayerEnter(gp);
+        }
+    }
+}
+
 }

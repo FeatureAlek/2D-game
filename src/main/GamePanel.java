@@ -31,11 +31,14 @@ public class GamePanel extends JPanel implements Runnable {
     // FPS
     private final int FPS = 60;
 
+    public object.SuperObject[] objects = new object.SuperObject[500];
+
     TileManager tileM = new TileManager(this);
     KeyHandler keyH = new KeyHandler();
     private Thread gameThread;
     public CollisionChecker cChecker = new CollisionChecker(this);
     public Player player = new Player(this, keyH);
+    
 
     public GamePanel(){
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -43,6 +46,8 @@ public class GamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+
+        tileM.loadObjects(objects);
     }
 
     public void startGameThread(){
